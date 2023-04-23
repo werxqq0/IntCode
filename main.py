@@ -4,18 +4,18 @@ import re
 import os
 from tkinter import filedialog
 
-print('IntCode, 1.1.0 version')  # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
+print('IntCode, 1.1.1 version') # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
 print('Made by Matveev_')
 print('https://github.com/UnMatveev/IntCode')
 
 py_compiler = 'run.py'
-
+win = 'start cmd /K "python run.py"'
+Linux = {'ubuntu':'gnome-terminal -- bash -c "python3 run.py; exec bash"'}
 
 def execute(event=None):
     with open(py_compiler, 'w', encoding='utf-8') as f:
         f.write(editArea.get('1.0', END))
-
-    os.system('start cmd /K "python run.py"')
+    os.system(win) #or (Linux['ubuntu'])
 
 
 def changes(event=None):
@@ -179,9 +179,7 @@ editArea = Text(
 editArea.pack(fill=BOTH, expand=1)
 
 editArea.insert('1.0', '''from random import randint
-
 print([randint(1, 20) for i in range(10)])
-
 ''')
 
 menu = Menu(root)
