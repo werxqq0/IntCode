@@ -2,14 +2,17 @@ from tkinter import *
 import ctypes
 import re
 import os
+from tkinter import filedialog
 
-print('IntCode, 1.0.0 version') #DONT TOUCH THIS IF YOU CONTRIBUTE SOMETHING
+print('IntCode, 1.1.0 version')  # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
 print('Made by Matveev_')
 print('https://github.com/UnMatveev/IntCode')
 
+py_compiler = 'run.py'
+
 
 def execute(event=None):
-    with open('run.py', 'w', encoding='utf-8') as f:
+    with open(py_compiler, 'w', encoding='utf-8') as f:
         f.write(editArea.get('1.0', END))
 
     os.system('start cmd /K "python run.py"')
@@ -67,11 +70,89 @@ def handle_opening_bracket(event):
         editArea.mark_set(INSERT, f"{INSERT}-1c")
 
 
+def handle_tab(event):
+    editArea.insert(INSERT, " " * 4)
+    return 'break'
+
+
+def handle_enter(event):
+    cursor_position = editArea.index(INSERT)
+
+    current_line_text = editArea.get(f"{cursor_position} linestart", cursor_position)
+
+    if current_line_text.endswith(":"):
+        indent = len(current_line_text) - len(current_line_text.lstrip())
+
+        editArea.insert(INSERT, "\n" + " " * (indent + 4))
+        return "break"
+    else:
+        indent = len(current_line_text) - len(current_line_text.lstrip())
+
+        editArea.insert(INSERT, "\n" + " " * indent)
+        return "break"
+
+
+def handle_backspace(event):
+    cursor_position = editArea.index(INSERT)
+
+    # Получаем текст текущей строки
+    current_line_text = editArea.get(f"{cursor_position} linestart", cursor_position)
+
+    # Проверяем, заканчивается ли строка на 4 пробела
+    if current_line_text.endswith("    "):
+        # Удаляем все 4 пробела
+        editArea.delete(f"{cursor_position}-4c", cursor_position)
+        # Возвращаем строку "break", чтобы избежать удаления символа по умолчанию
+        return "break"
+
+    # Далее, проверяем, является ли предыдущий символ скобкой или кавычкой
+    prev_char = editArea.get(cursor_position + " - 1c")
+    next_char = editArea.get(cursor_position)
+
+    brackets = {
+        "(": ")",
+        "{": "}",
+        "[": "]",
+        "'": "'",
+        '"': '"',
+    }
+
+    if prev_char in brackets and next_char in brackets.values() and brackets[prev_char] == next_char:
+        editArea.delete(cursor_position, f"{cursor_position}+1c")
+
+    return None
+
+
+def new_file():
+    editArea.delete("1.0", END)
+
+
+def save_file():
+    file = filedialog.asksaveasfile(mode="w", defaultextension=".txt")
+    if file is not None:
+        text = str(editArea.get(1.0, END))
+        file.write(text)
+        file.close()
+
+
+def open_file():
+    file = filedialog.askopenfile(mode="r")
+    if file is not None:
+        content = file.read()
+        editArea.delete(1.0, END)
+        editArea.insert(END, content)
+        file.close()
+
+
+def exit_program():
+    root.destroy()
+
+
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
 
 root = Tk()
 root.geometry('700x500')
-root.title('IntCode')
+root.title(f'IntCode - {py_compiler}')
 previousText = ''
 
 normal = rgb((234, 234, 234))
@@ -90,6 +171,7 @@ repl = [
     ['#.*?$', comments],
 ]
 
+
 editArea = Text(
     root, background=background, foreground=normal, insertbackground=normal, relief=FLAT, borderwidth=30, font=font
 )
@@ -102,9 +184,25 @@ print([randint(1, 20) for i in range(10)])
 
 ''')
 
+menu = Menu(root)
+root.config(menu=menu)
+file_menu = Menu(menu, tearoff=False)
+menu.add_cascade(label="File", menu=file_menu)
+
+
+# Добавление кнопок в меню "File"
+file_menu.add_command(label="New", command=new_file)
+file_menu.add_command(label="Open", command=open_file)
+file_menu.add_command(label="Save", command=save_file)
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=exit_program)
+
 editArea.bind('<KeyRelease>', changes)
 
 editArea.bind("<KeyPress>", handle_opening_bracket)
+editArea.bind("<Tab>", handle_tab)
+editArea.bind('<Return>', handle_enter)
+editArea.bind("<BackSpace>", handle_backspace)
 
 root.bind('<Control-r>', execute)
 
