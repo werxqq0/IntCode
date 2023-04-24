@@ -4,7 +4,7 @@ import re
 import os
 from tkinter import filedialog
 
-print('IntCode, 1.1.1 version') # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
+print('IntCode, 1.2.0 version')  # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
 print('Made by Matveev_')
 print('https://github.com/UnMatveev/IntCode')
 
@@ -12,13 +12,15 @@ py_compiler = 'run.py'
 win = 'start cmd /K "python run.py"'
 Linux = {'ubuntu':'gnome-terminal -- bash -c "python3 run.py; exec bash"'}
 
-def execute(event=None):
+
+def execute(event=True):
     with open(py_compiler, 'w', encoding='utf-8') as f:
         f.write(editArea.get('1.0', END))
+
     os.system(win) #or (Linux['ubuntu'])
 
 
-def changes(event=None):
+def changes(event=True):
     global previousText
 
     if editArea.get('1.0', END) == previousText:
@@ -95,17 +97,12 @@ def handle_enter(event):
 def handle_backspace(event):
     cursor_position = editArea.index(INSERT)
 
-    # Получаем текст текущей строки
     current_line_text = editArea.get(f"{cursor_position} linestart", cursor_position)
 
-    # Проверяем, заканчивается ли строка на 4 пробела
     if current_line_text.endswith("    "):
-        # Удаляем все 4 пробела
         editArea.delete(f"{cursor_position}-4c", cursor_position)
-        # Возвращаем строку "break", чтобы избежать удаления символа по умолчанию
         return "break"
 
-    # Далее, проверяем, является ли предыдущий символ скобкой или кавычкой
     prev_char = editArea.get(cursor_position + " - 1c")
     next_char = editArea.get(cursor_position)
 
@@ -121,6 +118,23 @@ def handle_backspace(event):
         editArea.delete(cursor_position, f"{cursor_position}+1c")
 
     return None
+
+
+def on_font_change(event):
+    # Обработчик изменения размера шрифта"""
+    current_font_size = int(editArea['font'].split()[1])
+    # изменяем размер шрифта в зависимости от направления прокрутки
+    if event.num == 5 or event.delta == -120:
+        new_font_size = max(current_font_size - 1, 10)
+    elif event.num == 4 or event.delta == 120:
+        new_font_size = min(current_font_size + 1, 45)
+    else:
+        return
+
+    editArea.yview_moveto(editArea.yview()[0])
+    editArea['yscrollcommand'] = None
+
+    editArea.configure(font=(font, new_font_size))
 
 
 def new_file():
@@ -148,61 +162,105 @@ def exit_program():
     root.destroy()
 
 
+def about_github():
+    os.system('start https://github.com/UnMatveev/IntCode')
+
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
 
 root = Tk()
 root.geometry('700x500')
 root.title(f'IntCode - {py_compiler}')
+root.iconbitmap('icon.ico')
 previousText = ''
 
-normal = rgb((234, 234, 234))
-keywords = rgb((234, 95, 95))
-comments = rgb((95, 234, 165))
-string = rgb((234, 162, 95))
+normal = rgb((216, 222, 233))
+keywords = rgb((181, 149, 198))
+keywords_2 = rgb((102, 153, 204))
+keywords_2_italic = rgb((102, 153, 204))
+keywords_3 = rgb((249, 123, 87))
+keywords_4 = rgb((222, 85, 84))
+comments = rgb((166, 172, 185))
+string = rgb((153, 199, 138))
 function = rgb((95, 211, 234))
-background = rgb((42, 42, 42))
+background = rgb((48, 56, 65))
 font = 'Consolas'
+font_size = 20
 
 repl = [
-    ['(^| )(False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for'
+    ['(^| )(False|True|and|as|assert|async|await|break|class|continue|del|elif|else|except|finally|for'
      '|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)($| )', keywords],
+    ['(get|write)', keywords_2],
+    ['(print|open)', keywords_2_italic],
+    ['(=|\-|\+|\/|\*)', keywords_3],
+    ['(None)', keywords_4],
     ['".*?"', string],
     ['\".*?\"', string],
+    ['\'.*?\'', string],
+    ['', keywords_3],
+    ['def', keywords],
     ['#.*?$', comments],
 ]
 
-
 editArea = Text(
-    root, background=background, foreground=normal, insertbackground=normal, relief=FLAT, borderwidth=30, font=font
+    root, background=background, foreground=normal, insertbackground=normal, relief=FLAT, borderwidth=30,
+    font=(font, font_size)
 )
 
 editArea.pack(fill=BOTH, expand=1)
 
-editArea.insert('1.0', '''from random import randint
-print([randint(1, 20) for i in range(10)])
-''')
+editArea.insert('1.0', '''import time as t
 
-menu = Menu(root)
-root.config(menu=menu)
-file_menu = Menu(menu, tearoff=False)
-menu.add_cascade(label="File", menu=file_menu)
+def manera():
+    print('Manera krutit mir')
 
+print('Hello, mir')
 
-# Добавление кнопок в меню "File"
-file_menu.add_command(label="New", command=new_file)
-file_menu.add_command(label="Open", command=open_file)
-file_menu.add_command(label="Save", command=save_file)
-file_menu.add_separator()
-file_menu.add_command(label="Exit", command=exit_program)
+t.sleep(1)
+
+manera()''')
+
+mmenu = Menu(root)
+root.config(menu=mmenu)
+
+file = Menu(mmenu, tearoff=False)
+edit = Menu(mmenu, tearoff=False)
+find = Menu(mmenu, tearoff=False)
+view = Menu(mmenu, tearoff=False)
+tools = Menu(mmenu, tearoff=False)
+settings = Menu(mmenu, tearoff=False)
+about = Menu(mmenu, tearoff=False)
+
+mmenu.add_cascade(label="File",
+                     menu=file)
+""" mmenu.add_cascade(label="Edit",
+                    menu=edit)
+mmenu.add_cascade(label="Find",
+                     menu=find)
+mmenu.add_cascade(label="View",
+                     menu=view)
+mmenu.add_cascade(label="Tools",
+                     menu=tools)
+mmenu.add_cascade(label="Settings",
+                     menu=settings) """
+mmenu.add_cascade(label="About",
+                     menu=about)
 
 editArea.bind('<KeyRelease>', changes)
-
 editArea.bind("<KeyPress>", handle_opening_bracket)
 editArea.bind("<Tab>", handle_tab)
 editArea.bind('<Return>', handle_enter)
 editArea.bind("<BackSpace>", handle_backspace)
+editArea.bind('<Control-MouseWheel>', on_font_change)
 
-root.bind('<Control-r>', execute)
+file.add_command(label="New File", command=new_file)
+file.add_command(label="Open File...", command=open_file)
+file.add_command(label="Save As...", command=save_file)
+file.add_separator()
+file.add_command(label="Compile", command=execute)
+file.add_separator()
+file.add_command(label="Exit", command=exit_program)
+
+about.add_command(label="GitHub", command=about_github)
 
 changes()
 
