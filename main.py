@@ -3,8 +3,12 @@ import ctypes
 import re
 import os
 from tkinter import filedialog
+import json
 
-print(f'IntCode, 1.3 version') # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
+with open('themes.json') as f:
+    themes = json.load(f)
+
+print(f'IntCode, 1.3.1 version') # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
 print('Made by Matveev_')
 print('https://github.com/UnMatveev/IntCode')
 
@@ -50,8 +54,8 @@ def search_re(pattern, text):
     return matches
 
 
-def rgb(rgb):
-    return '#%02x%02x%02x' % rgb
+def rgb(color):
+    return '#{:02x}{:02x}{:02x}'.format(*color)
 
 
 def handle_opening_bracket(event):
@@ -223,29 +227,106 @@ root.geometry(shw)
 root.title(f'IntCode - {py_compiler}')
 previousText = ''
 
-background = rgb((40, 44, 52))
-normal = rgb((195, 195, 195))
-w1 = rgb((213, 95, 222))
-w2 = rgb((88, 167, 222))
-w3 = rgb((249, 123, 87))
-w4 = rgb((222, 85, 84))
-w5 = rgb((41, 185, 196))
-w6 = rgb((229, 192, 123))
-w7 = rgb((208, 140, 98))
-comments = rgb((166, 172, 185))
-string = rgb((136, 201, 118))
-function = rgb((95, 211, 234))
+default_theme = themes['default']
+mariana_theme = themes['mariana']
+one_dark_theme = themes['one_dark']
+
+def set_one_dark_style():
+    global background, normal, w1, w2, w3, w4, w5, w6, w7, w8, comments, string, function
+    background = rgb((one_dark_theme['background']))
+    normal = rgb((one_dark_theme['normal']))
+    w1 = rgb((one_dark_theme['w1']))  # def
+    w2 = rgb((one_dark_theme['w2']))  # def name
+    w3 = rgb((one_dark_theme['w3']))
+    w4 = rgb((one_dark_theme['w4']))
+    w5 = rgb((one_dark_theme['w5']))  # print
+    w6 = rgb((one_dark_theme['w6']))
+    w7 = rgb((one_dark_theme['w7']))
+    w8 = rgb((one_dark_theme['w8']))  # self
+    comments = rgb((one_dark_theme['comments']))
+    string = rgb((one_dark_theme['string']))
+    function = rgb((one_dark_theme['function']))
+    editArea.config(background=background, foreground=normal)
+    for pat, col in repl:
+        editArea.tag_configure(str(col), foreground=col)
+    with open('themes.json', 'r') as f:
+        data = json.load(f)
+    data['default']['background'] = data['one_dark']['background']
+    data['default']['normal'] = data['one_dark']['normal']
+    data['default']['w1'] = data['one_dark']['w1']
+    data['default']['w2'] = data['one_dark']['w2']
+    data['default']['w3'] = data['one_dark']['w3']
+    data['default']['w4'] = data['one_dark']['w4']
+    data['default']['w5'] = data['one_dark']['w5']
+    data['default']['w6'] = data['one_dark']['w6']
+    data['default']['w7'] = data['one_dark']['w7']
+    data['default']['w8'] = data['one_dark']['w8']
+    data['default']['comments'] = data['one_dark']['comments']
+    data['default']['string'] = data['one_dark']['string']
+    data['default']['function'] = data['one_dark']['function']
+    with open('themes.json', 'w') as f:
+        json.dump(data, f, indent=2)
+
+def set_mariana_style():
+    global background, normal, w1, w2, w3, w4, w5, w6, w7, w8, comments, string, function
+    background = rgb((mariana_theme['background']))
+    normal = rgb((mariana_theme['normal']))
+    w1 = rgb((mariana_theme['w1'])) #def
+    w2 = rgb((mariana_theme['w2'])) #def name
+    w3 = rgb((mariana_theme['w3']))
+    w4 = rgb((mariana_theme['w4']))
+    w5 = rgb((mariana_theme['w5'])) #print
+    w6 = rgb((mariana_theme['w6']))
+    w7 = rgb((mariana_theme['w7']))
+    w8 = rgb((mariana_theme['w8'])) #self
+    comments = rgb((mariana_theme['comments']))
+    string = rgb((mariana_theme['string']))
+    function = rgb((mariana_theme['function']))
+    editArea.config(background=background, foreground=normal)
+    for pat, col in repl:
+        editArea.tag_configure(str(col), foreground=col)
+    with open('themes.json', 'r') as f:
+        data = json.load(f)
+    data['default']['background'] = data['mariana']['background']
+    data['default']['normal'] = data['mariana']['normal']
+    data['default']['w1'] = data['mariana']['w1']
+    data['default']['w2'] = data['mariana']['w2']
+    data['default']['w3'] = data['mariana']['w3']
+    data['default']['w4'] = data['mariana']['w4']
+    data['default']['w5'] = data['mariana']['w5']
+    data['default']['w6'] = data['mariana']['w6']
+    data['default']['w7'] = data['mariana']['w7']
+    data['default']['w8'] = data['mariana']['w8']
+    data['default']['comments'] = data['mariana']['comments']
+    data['default']['string'] = data['mariana']['string']
+    data['default']['function'] = data['mariana']['function']
+    with open('themes.json', 'w') as f:
+        json.dump(data, f, indent=2)
+
+background = rgb((default_theme['background']))
+normal = rgb((default_theme['normal']))
+w1 = rgb((default_theme['w1'])) #def
+w2 = rgb((default_theme['w2'])) #def name
+w3 = rgb((default_theme['w3']))
+w4 = rgb((default_theme['w4']))
+w5 = rgb((default_theme['w5'])) #print
+w6 = rgb((default_theme['w6']))
+w7 = rgb((default_theme['w7']))
+w8 = rgb((default_theme['w8'])) #self
+comments = rgb((default_theme['comments']))
+string = rgb((default_theme['string']))
+function = rgb((default_theme['function']))
 font = 'Consolas'
 font_size = 15
 
 repl = [
     ['(^| )(and|as|assert|async|await|break|class|continue|del|elif|else|except|finally|for'
      '|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)($| )', w1],
-    ['(self|False|True)', w1],
+    ['(?<!self)\.(?=\w+)', w8],
+    ['(self|False|True)', w8],
     ['\w+(?=\()', w2],
     ['"[^"]*"', string],
     ["'[^']*'", string],
-    ['(get|write|print|open)', w5],
     [r'==|!=|>|<|>=|<=|=|\+|\-|\*|\/|\%', w3],
     ['(None)', w4],
     ['".*?"', string],
@@ -256,9 +337,9 @@ repl = [
     ['(?<=def\s)\w+', w2],
     ['def', w1],
     ['(?<=\.)\w+', w2],
-    [r'\b\d+\.\d+\b', w7],
     ['(?<!\w)\\d+(?!\w)', w7],
     ['#.*?$', comments],
+    ['(get|write|print|open|__init__)', w5],
 ]
 
 editArea = Text(
@@ -268,7 +349,56 @@ editArea = Text(
 
 editArea.pack(fill=BOTH, expand=1)
 
-editArea.insert('1.0', '''Welcome.''')
+editArea.insert('1.0', '''# Определение функции
+def greet(name):
+    print(f"Привет, {name}!")
+
+# Определение класса
+class Car:
+    # Определение конструктора
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+        self.odometer_reading = 0
+    
+    # Определение метода
+    def get_descriptive_name(self):
+        long_name = f"{self.year} {self.make} {self.model}"
+        return long_name.title()
+    
+    # Определение метода
+    def read_odometer(self):
+        print(f"Пробег этого автомобиля составляет {self.odometer_reading} миль.")
+    
+    # Определение метода
+    def update_odometer(self, mileage):
+        if mileage >= self.odometer_reading:
+            self.odometer_reading = mileage
+        else:
+            print("Вы не можете откатить показания одометра!")
+
+# Создание экземпляра класса
+my_car = Car('audi', 'a4', 2022)
+print(my_car.get_descriptive_name())
+
+# Вызов метода
+my_car.read_odometer()
+
+# Обновление атрибута
+my_car.odometer_reading = 100
+
+# Вызов метода
+my_car.read_odometer()
+
+# Обновление атрибута через метод
+my_car.update_odometer(200)
+
+# Вызов метода
+my_car.read_odometer()
+
+# Вызов функции
+greet("Михаил")''')
 
 mmenu = Menu(root)
 root.config(menu=mmenu)
@@ -290,9 +420,9 @@ mmenu.add_cascade(label="Edit",
 mmenu.add_cascade(label="View",
                      menu=view)
 mmenu.add_cascade(label="Tools",
-                     menu=tools)
+                     menu=tools) """
 mmenu.add_cascade(label="Settings",
-                     menu=settings) """
+                     menu=settings)
 mmenu.add_cascade(label="About",
                   menu=about)
 
@@ -310,6 +440,11 @@ file.add_separator()
 file.add_command(label="Compile", command=execute)
 file.add_separator()
 file.add_command(label="Exit", command=exit_program)
+
+themes = Menu(settings, tearoff=False)
+settings.add_cascade(label="Themes", menu=themes)
+themes.add_command(label="One Dark", command=set_one_dark_style)
+themes.add_command(label="Mariana", command=set_mariana_style)
 
 about.add_command(label="GitHub", command=about_github)
 
