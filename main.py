@@ -4,20 +4,19 @@ import re
 import os
 from tkinter import filedialog
 
-print('IntCode, 1.2.0 version')  # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
+print(f'IntCode, 1.3 version') # DON'T TOUCH THIS IF YOU CONTRIBUTE SOMETHING
 print('Made by Matveev_')
 print('https://github.com/UnMatveev/IntCode')
 
 py_compiler = 'run.py'
 win = 'start cmd /K "python run.py"'
-Linux = {'ubuntu':'gnome-terminal -- bash -c "python3 run.py; exec bash"'}
-
+Linux = {'ubuntu': 'gnome-terminal -- bash -c "python3 run.py; exec bash"'}
 
 def execute(event=True):
     with open(py_compiler, 'w', encoding='utf-8') as f:
         f.write(editArea.get('1.0', END))
 
-    os.system(win) #or (Linux['ubuntu'])
+    os.system(win)  # or (Linux['ubuntu'])
 
 
 def changes(event=True):
@@ -89,8 +88,13 @@ def handle_enter(event):
         return "break"
     else:
         indent = len(current_line_text) - len(current_line_text.lstrip())
+        next_char = editArea.get(cursor_position)
 
-        editArea.insert(INSERT, "\n" + " " * indent)
+        if next_char in [")", "]", "}"]:
+            editArea.insert(INSERT, f"\n{' ' * (indent + 4)}\n")
+            editArea.mark_set(INSERT, f"{cursor_position}+5c")
+        else:
+            editArea.insert(INSERT, "\n" + " " * indent)
         return "break"
 
 
@@ -120,6 +124,37 @@ def handle_backspace(event):
     return None
 
 
+def handle_enter_second(event):
+    # получаем координаты текущей выделенной области
+    sel_start, sel_end = editArea.tag_ranges("sel")
+
+    # если выделения нет, то не обрабатываем
+    if not sel_start or not sel_end:
+        return
+
+    # получаем текст между выделенными координатами
+    text = editArea.get(sel_start, sel_end)
+
+    # определяем тип скобки, если это скобки вообще
+    if text in ["()", "[]", "{}"]:
+        # получаем координаты курсора
+        cursor = editArea.index(INSERT)
+
+        # определяем новые координаты для скобки
+        row, col = map(int, cursor.split("."))
+        new_row, new_col = row + 2, col
+
+        # перемещаем скобку в новую позицию
+        editArea.delete(sel_start, sel_end)
+        editArea.insert(f"{new_row}.{new_col}", text)
+
+        # вставляем отступ
+        editArea.insert(cursor, "\n" + " " * 4)
+
+        # устанавливаем курсор в новую позицию
+        editArea.mark_set(INSERT, f"{new_row}.{new_col + 4}")
+
+
 def on_font_change(event):
     # Обработчик изменения размера шрифта"""
     current_font_size = int(editArea['font'].split()[1])
@@ -135,6 +170,17 @@ def on_font_change(event):
     editArea['yscrollcommand'] = None
 
     editArea.configure(font=(font, new_font_size))
+
+
+def highlight_functions(text):
+    # Регулярное выражение для поиска имен функций
+    pattern = r'\b\w+\('
+
+    # Ищем имена функций в тексте и проверяем их наличие в текущем контексте
+    for match in re.finditer(pattern, text):
+        func_name = match.group()[:-1]
+        if func_name in globals() or func_name in locals():
+            yield match.start(), match.end(), function
 
 
 def new_file():
@@ -165,39 +211,53 @@ def exit_program():
 def about_github():
     os.system('start https://github.com/UnMatveev/IntCode')
 
+
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
 
+sw = '700'
+hw = '500'
+shw = f'{sw}x{hw}'
+
 root = Tk()
-root.geometry('700x500')
+root.geometry(shw)
 root.title(f'IntCode - {py_compiler}')
-root.iconbitmap('icon.ico')
 previousText = ''
 
-normal = rgb((216, 222, 233))
-keywords = rgb((181, 149, 198))
-keywords_2 = rgb((102, 153, 204))
-keywords_2_italic = rgb((102, 153, 204))
-keywords_3 = rgb((249, 123, 87))
-keywords_4 = rgb((222, 85, 84))
+background = rgb((40, 44, 52))
+normal = rgb((195, 195, 195))
+w1 = rgb((213, 95, 222))
+w2 = rgb((88, 167, 222))
+w3 = rgb((249, 123, 87))
+w4 = rgb((222, 85, 84))
+w5 = rgb((41, 185, 196))
+w6 = rgb((229, 192, 123))
+w7 = rgb((208, 140, 98))
 comments = rgb((166, 172, 185))
-string = rgb((153, 199, 138))
+string = rgb((136, 201, 118))
 function = rgb((95, 211, 234))
-background = rgb((48, 56, 65))
 font = 'Consolas'
-font_size = 20
+font_size = 15
 
 repl = [
-    ['(^| )(False|True|and|as|assert|async|await|break|class|continue|del|elif|else|except|finally|for'
-     '|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)($| )', keywords],
-    ['(get|write)', keywords_2],
-    ['(print|open)', keywords_2_italic],
-    ['(=|\-|\+|\/|\*)', keywords_3],
-    ['(None)', keywords_4],
+    ['(^| )(and|as|assert|async|await|break|class|continue|del|elif|else|except|finally|for'
+     '|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)($| )', w1],
+    ['(self|False|True)', w1],
+    ['\w+(?=\()', w2],
+    ['"[^"]*"', string],
+    ["'[^']*'", string],
+    ['(get|write|print|open)', w5],
+    [r'==|!=|>|<|>=|<=|=|\+|\-|\*|\/|\%', w3],
+    ['(None)', w4],
     ['".*?"', string],
     ['\".*?\"', string],
     ['\'.*?\'', string],
-    ['', keywords_3],
-    ['def', keywords],
+    ['(?<=class\s)\w+', w6],
+    ['class', w1],
+    ['(?<=def\s)\w+', w2],
+    ['def', w1],
+    ['(?<=\.)\w+', w2],
+    [r'\b\d+\.\d+\b', w7],
+    ['(?<!\w)\\d+(?!\w)', w7],
     ['#.*?$', comments],
 ]
 
@@ -208,16 +268,7 @@ editArea = Text(
 
 editArea.pack(fill=BOTH, expand=1)
 
-editArea.insert('1.0', '''import time as t
-
-def manera():
-    print('Manera krutit mir')
-
-print('Hello, mir')
-
-t.sleep(1)
-
-manera()''')
+editArea.insert('1.0', '''Welcome.''')
 
 mmenu = Menu(root)
 root.config(menu=mmenu)
@@ -231,10 +282,10 @@ settings = Menu(mmenu, tearoff=False)
 about = Menu(mmenu, tearoff=False)
 
 mmenu.add_cascade(label="File",
-                     menu=file)
-""" mmenu.add_cascade(label="Edit",
-                    menu=edit)
-mmenu.add_cascade(label="Find",
+                  menu=file)
+mmenu.add_cascade(label="Edit",
+                  menu=edit)
+""" mmenu.add_cascade(label="Find",
                      menu=find)
 mmenu.add_cascade(label="View",
                      menu=view)
@@ -243,7 +294,7 @@ mmenu.add_cascade(label="Tools",
 mmenu.add_cascade(label="Settings",
                      menu=settings) """
 mmenu.add_cascade(label="About",
-                     menu=about)
+                  menu=about)
 
 editArea.bind('<KeyRelease>', changes)
 editArea.bind("<KeyPress>", handle_opening_bracket)
